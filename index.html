@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIIT – Student Performance System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--indigo:#4f46e5;--indigo-d:#3730a3;--green:#16a34a;--red:#dc2626;--amber:#d97706;--sky:#0ea5e9;--purple:#7c3aed}
+body{font-family:'Inter',sans-serif;min-height:100vh;background:#0f172a;color:#1e293b}
+.hidden{display:none!important}
+
+/* ── ANIMATED BACKGROUND ── */
+.bg-wrap{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.bg-mesh{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 30%,#312e81 0%,transparent 60%),radial-gradient(ellipse 70% 50% at 80% 80%,#1e1b4b 0%,transparent 60%),linear-gradient(180deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%)}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:drift 12s ease-in-out infinite alternate}
+.orb1{width:500px;height:500px;background:#4f46e5;top:-100px;left:-100px;animation-delay:0s}
+.orb2{width:400px;height:400px;background:#7c3aed;bottom:-80px;right:-80px;animation-delay:-4s}
+.orb3{width:300px;height:300px;background:#0ea5e9;top:40%;left:50%;animation-delay:-8s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(40px,30px) scale(1.08)}}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px);background-size:50px 50px}
+
+/* ── LOGIN ── */
+.login-page{position:relative;z-index:10;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-card{background:rgba(255,255,255,.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:2.5rem;width:100%;max-width:440px;box-shadow:0 25px 60px rgba(0,0,0,.5)}
+.login-brand{text-align:center;margin-bottom:1.75rem}
+.login-brand .logo-ring{width:56px;height:56px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;box-shadow:0 0 30px rgba(79,70,229,.5)}
+.login-brand h1{font-size:1.3rem;font-weight:700;color:#f1f5f9;margin-bottom:.2rem}
+.login-brand p{font-size:.8rem;color:#94a3b8}
+.role-tabs{display:flex;gap:6px;margin-bottom:1.5rem;background:rgba(255,255,255,.05);padding:4px;border-radius:10px}
+.role-tab{flex:1;padding:.45rem;text-align:center;border:none;background:transparent;border-radius:7px;font-size:.82rem;cursor:pointer;color:#94a3b8;font-weight:500;transition:all .2s}
+.role-tab.active{background:rgba(79,70,229,.8);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.4)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.78rem;font-weight:500;color:#cbd5e1;margin-bottom:.35rem}
+.form-group input,.form-group select{width:100%;padding:.65rem .9rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;font-size:.88rem;color:#f1f5f9;outline:none;transition:border .2s}
+.form-group input::placeholder{color:#64748b}
+.form-group input:focus,.form-group select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.login-btn{width:100%;padding:.75rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:9px;font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .2s;margin-top:.5rem;box-shadow:0 4px 20px rgba(79,70,229,.4)}
+.login-btn:hover{opacity:.9}
+.login-hint{font-size:.75rem;color:#64748b;text-align:center;margin-top:.9rem;line-height:1.5}
+.err-msg{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5;padding:.6rem .9rem;border-radius:8px;font-size:.82rem;margin-bottom:1rem;display:none}
+
+/* ── APP SHELL ── */
+.app-shell{position:relative;z-index:10;display:flex;min-height:100vh}
+.sidebar{width:250px;background:rgba(15,23,42,.85);backdrop-filter:blur(20px);border-right:1px solid rgba(255,255,255,.08);padding:1.25rem 1rem;display:flex;flex-direction:column;flex-shrink:0}
+.sb-brand{padding:.5rem .75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.75rem}
+.sb-brand h2{font-size:1rem;font-weight:700;color:#f1f5f9;letter-spacing:-.3px}
+.sb-brand p{font-size:.73rem;color:#64748b;margin-top:.15rem}
+.nav-section{font-size:.68rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.08em;padding:.4rem .75rem;margin-top:.75rem}
+.nav-item{padding:.55rem .75rem;border-radius:8px;cursor:pointer;font-size:.83rem;color:#94a3b8;display:flex;align-items:center;gap:.6rem;transition:all .18s;margin-bottom:.1rem}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.nav-item.active{background:linear-gradient(135deg,rgba(79,70,229,.35),rgba(124,58,237,.2));color:#a5b4fc;border:1px solid rgba(99,102,241,.25)}
+.sb-footer{margin-top:auto;padding-top:1rem;border-top:1px solid rgba(255,255,255,.08)}
+.user-badge{display:flex;align-items:center;gap:.65rem;padding:.5rem .75rem}
+.avatar{width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:.82rem;font-weight:600;color:#e2e8f0}
+.user-role{font-size:.71rem;color:#64748b}
+.logout-btn{width:100%;margin-top:.6rem;padding:.4rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#94a3b8;border-radius:7px;font-size:.78rem;cursor:pointer;transition:all .2s}
+.logout-btn:hover{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+
+/* ── MAIN ── */
+.main-area{flex:1;padding:1.75rem;overflow-y:auto;min-width:0;background:rgba(15,23,42,.4)}
+.page{display:none}
+.page.active{display:block}
+.pg-title{font-size:1.25rem;font-weight:700;color:#f1f5f9;margin-bottom:.2rem}
+.pg-sub{font-size:.82rem;color:#64748b;margin-bottom:1.5rem}
+
+/* ── GLASS CARDS ── */
+.g-card{background:rgba(255,255,255,.05);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:1.25rem}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.85rem;margin-bottom:1.25rem}
+.stat-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem 1.1rem}
+.stat-val{font-size:1.7rem;font-weight:800;color:#f1f5f9;line-height:1}
+.stat-lbl{font-size:.73rem;color:#64748b;margin-top:.3rem}
+.stat-badge{font-size:.7rem;padding:.18rem .45rem;border-radius:5px;display:inline-block;margin-top:.4rem;font-weight:600}
+.b-green{background:rgba(22,163,74,.2);color:#4ade80}
+.b-blue{background:rgba(14,165,233,.2);color:#38bdf8}
+.b-red{background:rgba(220,38,38,.2);color:#f87171}
+.b-amber{background:rgba(217,119,6,.2);color:#fbbf24}
+.b-purple{background:rgba(124,58,237,.2);color:#c4b5fd}
+
+/* ── TABLES ── */
+.tbl-wrap{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-bottom:1.25rem}
+.tbl-hdr{padding:.9rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem}
+.tbl-ttl{font-size:.9rem;font-weight:600;color:#e2e8f0}
+.search-box{padding:.4rem .75rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;font-size:.8rem;color:#e2e8f0;outline:none;width:190px}
+.search-box::placeholder{color:#475569}
+.search-box:focus{border-color:#6366f1}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{padding:.55rem .9rem;background:rgba(255,255,255,.04);color:#64748b;font-weight:600;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap}
+td{padding:.55rem .9rem;border-bottom:1px solid rgba(255,255,255,.04);color:#cbd5e1}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.03)}
+.grade-pill{padding:.18rem .48rem;border-radius:4px;font-size:.72rem;font-weight:700}
+.g-S{background:rgba(22,163,74,.25);color:#4ade80}
+.g-A{background:rgba(14,165,233,.25);color:#38bdf8}
+.g-B{background:rgba(79,70,229,.25);color:#a5b4fc}
+.g-C{background:rgba(217,119,6,.25);color:#fbbf24}
+.g-D{background:rgba(234,88,12,.25);color:#fb923c}
+.g-E{background:rgba(168,85,247,.25);color:#d8b4fe}
+.g-F{background:rgba(220,38,38,.25);color:#f87171}
+.g-MP{background:rgba(100,116,139,.2);color:#94a3b8}
+.g-AB{background:rgba(100,116,139,.15);color:#64748b}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.chart-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:1.1rem}
+.chart-title{font-size:.85rem;font-weight:600;color:#e2e8f0;margin-bottom:1rem}
+.bar-row{display:flex;align-items:center;gap:.65rem;margin-bottom:.5rem}
+.bar-lbl{font-size:.74rem;color:#94a3b8;width:76px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:22px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;transition:width .5s ease}
+.bar-fill span{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.9)}
+.bar-ext{font-size:.7rem;color:#64748b;width:32px;flex-shrink:0}
+
+/* ── SGPA DONUT ── */
+.donut-wrap{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.donut-legend{display:flex;flex-direction:column;gap:.4rem}
+.leg-item{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:#94a3b8}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── PROGRESS CARD ── */
+.pc-wrap{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:1.5rem}
+.pc-hdr{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
+.pc-marks-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;margin:1rem 0}
+.pc-m{text-align:center;padding:.65rem .4rem;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.pc-mv{font-size:1.2rem;font-weight:700;color:#f1f5f9}
+.pc-ms{font-size:.68rem;color:#64748b;margin-top:.2rem}
+.pc-mm{font-size:.65rem;color:#475569}
+.divider{border:none;border-top:1px solid rgba(255,255,255,.08);margin:.85rem 0}
+.info-row{display:flex;justify-content:space-between;font-size:.8rem;padding:.28rem 0}
+.il{color:#64748b}
+.iv{font-weight:600;color:#e2e8f0}
+
+/* ── TOPPERS ── */
+.topper-item{display:flex;align-items:center;gap:.85rem;padding:.6rem .9rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;margin-bottom:.45rem}
+.rank-b{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.r1{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#78350f}
+.r2{background:linear-gradient(135deg,#9ca3af,#d1d5db);color:#1f2937}
+.r3{background:linear-gradient(135deg,#cd7c2f,#d97706);color:#fff}
+.rn{background:rgba(79,70,229,.3);color:#a5b4fc}
+
+/* ── STUDENT HERO ── */
+.s-hero{background:linear-gradient(135deg,#312e81,#4c1d95);border:1px solid rgba(165,180,252,.2);border-radius:14px;padding:1.5rem;color:#f1f5f9;margin-bottom:1.1rem;box-shadow:0 10px 40px rgba(79,70,229,.3)}
+
+/* ── GUIDANCE ── */
+.guid-item{padding:.55rem .8rem;border-radius:8px;font-size:.8rem;margin-bottom:.4rem;display:flex;align-items:flex-start;gap:.55rem}
+.guid-good{background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.2);color:#4ade80}
+.guid-warn{background:rgba(217,119,6,.12);border:1px solid rgba(217,119,6,.2);color:#fbbf24}
+.guid-bad{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.2);color:#f87171}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed rgba(99,102,241,.4);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(79,70,229,.04)}
+.upload-zone:hover,.upload-zone.drag{border-color:#6366f1;background:rgba(79,70,229,.1)}
+.upload-zone input[type=file]{display:none}
+.upload-icon{font-size:2.5rem;margin-bottom:.75rem}
+.upload-title{font-size:.95rem;font-weight:600;color:#e2e8f0;margin-bottom:.4rem}
+.upload-sub{font-size:.78rem;color:#64748b}
+.upload-result{margin-top:1.25rem;padding:1rem;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);border-radius:9px;display:none}
+.upload-result.show{display:block}
+
+/* ── MESSAGING ── */
+.msg-thread{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem;margin-bottom:1rem;padding:.5rem}
+.msg-bubble{padding:.65rem .9rem;border-radius:10px;font-size:.82rem;max-width:80%;line-height:1.5}
+.msg-admin{background:rgba(79,70,229,.25);border:1px solid rgba(99,102,241,.3);color:#c7d2fe;align-self:flex-end}
+.msg-faculty{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#cbd5e1;align-self:flex-start}
+.msg-time{font-size:.68rem;color:#475569;margin-top:.25rem}
+.msg-input-row{display:flex;gap:.65rem}
+.msg-input{flex:1;padding:.6rem .85rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:.83rem;color:#f1f5f9;outline:none;resize:none}
+.msg-input:focus{border-color:#6366f1}
+.send-btn{padding:.6rem 1rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer}
+.send-btn:hover{opacity:.85}
+
+/* ── SELECTORS ── */
+.sel-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.1rem}
+.sel-grp label{font-size:.75rem;font-weight:500;color:#94a3b8;display:block;margin-bottom:.3rem}
+.sel-grp select{padding:.42rem .7rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:.8rem;color:#e2e8f0;outline:none;cursor:pointer}
+.sel-grp select:focus{border-color:#6366f1}
+.sel-grp select option{background:#1e293b;color:#e2e8f0}
+
+/* ── ACTION BTN ── */
+.act-btn{padding:.5rem 1rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+.act-btn:hover{opacity:.88}
+.act-btn.outline{background:transparent;border:1px solid rgba(99,102,241,.5);color:#a5b4fc}
+.act-btn.outline:hover{background:rgba(79,70,229,.15)}
+
+/* ── CLASS BADGE ── */
+.class-badge{display:inline-block;padding:.22rem .6rem;border-radius:5px;font-size:.72rem;font-weight:600}
+.cls1{background:rgba(79,70,229,.25);color:#a5b4fc}
+.cls2{background:rgba(14,165,233,.25);color:#38bdf8}
+.cls3{background:rgba(22,163,74,.25);color:#4ade80}
+.cls4{background:rgba(217,119,6,.25);color:#fbbf24}
+.cls5{background:rgba(168,85,247,.25);color:#d8b4fe}
+
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr}.sidebar{width:200px}}
+@media print{.sidebar,.act-btn,.upload-zone,.msg-input-row,.sel-row{display:none!important}.main-area{padding:.5rem}.app-shell{display:block}.bg-wrap{display:none}}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg-wrap">
+  <div class="bg-mesh"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="grid-lines"></div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-page" id="loginPage">
+<div class="login-card">
+  <div class="login-brand">
+    <div class="logo-ring">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M7 20V10l7 6 7-6v10" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1>VIIT Performance System</h1>
+    <p>Vignan's Institute of Information Technology · VSP</p>
+  </div>
+  <div class="role-tabs">
+    <button class="role-tab active" id="tab-student" onclick="setRole('student',this)">Student</button>
+    <button class="role-tab" id="tab-faculty" onclick="setRole('faculty',this)">Faculty</button>
+    <button class="role-tab" id="tab-admin" onclick="setRole('admin',this)">Admin</button>
+  </div>
+  <div class="err-msg" id="errMsg"></div>
+  <div class="form-group" id="classGroup" style="display:none">
+    <label>Class</label>
+    <select id="loginClass">
+      <option value="1">Class 1 – CSE-CS (25L31A46xx)</option>
+      <option value="2">Class 2 – CSE-AI (25L31A47xx)</option>
+      <option value="3">Class 3 – CSE-DS (25L31A48xx)</option>
+      <option value="4">Class 4 – CSE-CY (25L31A49xx)</option>
+      <option value="5">Class 5 – CSE-IoT (25L31A50xx)</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label id="idLbl">Roll Number</label>
+    <input type="text" id="loginId" placeholder="e.g. 25L31A4601">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="loginPwd" placeholder="Enter password">
+  </div>
+  <button class="login-btn" onclick="doLogin()">Sign In</button>
+  <div class="login-hint" id="loginHint">Student: roll number as ID · password = last 2 digits of roll number</div>
+</div>
+</div>
+
+<!-- APP -->
+<div class="app-shell hidden" id="appShell">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <h2 id="sbTitle">VIIT</h2>
+      <p id="sbSub">Academic System</p>
+    </div>
+    <div id="navLinks"></div>
+    <div class="sb-footer">
+      <div class="user-badge">
+        <div class="avatar" id="avatarEl">?</div>
+        <div>
+          <div class="user-name" id="dispName">–</div>
+          <div class="user-role" id="dispRole">–</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+  <div class="main-area" id="mainArea"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA LAYER
+// ═══════════════════════════════════════════════════
+
+// Class definitions
+const CLASSES = {
+  "1": {name:"Class 1",branch:"CSE-CS",prefix:"25L31A46",rolls:74,offset:1},
+  "2": {name:"Class 2",branch:"CSE-AI",prefix:"25L31A47",rolls:65,offset:1},
+  "3": {name:"Class 3",branch:"CSE-DS",prefix:"25L31A48",rolls:70,offset:1},
+  "4": {name:"Class 4",branch:"CSE-CY",prefix:"25L31A49",rolls:60,offset:1},
+  "5": {name:"Class 5",branch:"CSE-IoT",prefix:"25L31A50",rolls:55,offset:1}
+};
+
+// Faculty assignments
+const FACULTY = {
+  "faculty4678": {cls:"1",name:"Dr. P. Ramakrishna"},
+  "faculty5532": {cls:"2",name:"Dr. S. Lakshmi"},
+  "faculty6641": {cls:"3",name:"Prof. K. Venkata Rao"},
+  "faculty7790": {cls:"4",name:"Dr. M. Srinivas"},
+  "faculty8801": {cls:"5",name:"Prof. A. Padmavathi"}
+};
+
+const SUBJ = ['LAC','Chem','EG','BCME','IP'];
+const SUBNAMES = {LAC:'Linear Algebra & Calculus',Chem:'Chemistry',EG:'Engineering Graphics',BCME:'Basic Civil & Mech Engg',IP:'Intro to Programming'};
+const MID_MAX = {LAC:25,Chem:25,EG:30,BCME:25,IP:25};
+
+// Build roll numbers for each class
+function buildRolls(cls) {
+  const c = CLASSES[cls];
+  const rolls = [];
+  for(let i=0; i<c.rolls; i++) {
+    rolls.push(c.prefix + String(c.offset+i).padStart(2,'0'));
+  }
+  return rolls;
+}
+
+// Seeded random for consistent data
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+
+// Class 1 real Mid-1 data from DOCX
+const CLASS1_MID1 = {
+"25L31A4601":{LAC:14,Chem:18,EG:26,BCME:20.5,IP:20},
+"25L31A4602":{LAC:22,Chem:17,EG:27,BCME:22.5,IP:20.5},
+"25L31A4603":{LAC:19,Chem:23,EG:28,BCME:16.5,IP:19.5},
+"25L31A4604":{LAC:12,Chem:5,EG:16,BCME:17,IP:10.5},
+"25L31A4605":{LAC:23,Chem:23,EG:25,BCME:20,IP:20},
+"25L31A4606":{LAC:20,Chem:null,EG:25,BCME:20,IP:22},
+"25L31A4607":{LAC:20,Chem:24,EG:30,BCME:20,IP:19},
+"25L31A4608":{LAC:24,Chem:16,EG:28,BCME:19.5,IP:23},
+"25L31A4609":{LAC:11,Chem:13,EG:23,BCME:13.5,IP:19.5},
+"25L31A4610":{LAC:22,Chem:25,EG:28,BCME:19.5,IP:17.5},
+"25L31A4611":{LAC:25,Chem:24,EG:25,BCME:null,IP:22},
+"25L31A4612":{LAC:15,Chem:12,EG:25,BCME:13,IP:12},
+"25L31A4613":{LAC:19,Chem:22,EG:30,BCME:20,IP:23},
+"25L31A4614":{LAC:21,Chem:11,EG:15,BCME:15,IP:16.5},
+"25L31A4615":{LAC:25,Chem:25,EG:30,BCME:22.5,IP:23},
+"25L31A4616":{LAC:25,Chem:22,EG:30,BCME:15.5,IP:19},
+"25L31A4617":{LAC:18,Chem:19,EG:22,BCME:15.5,IP:21},
+"25L31A4618":{LAC:25,Chem:25,EG:30,BCME:23,IP:23.5},
+"25L31A4619":{LAC:15,Chem:11,EG:22,BCME:17,IP:15},
+"25L31A4620":{LAC:25,Chem:20,EG:28,BCME:19,IP:15.5},
+"25L31A4621":{LAC:25,Chem:25,EG:23,BCME:18.5,IP:20},
+"25L31A4622":{LAC:25,Chem:25,EG:30,BCME:23.5,IP:22.5},
+"25L31A4623":{LAC:25,Chem:25,EG:20,BCME:24,IP:22.5},
+"25L31A4624":{LAC:25,Chem:24,EG:30,BCME:24,IP:17.5},
+"25L31A4625":{LAC:25,Chem:21,EG:30,BCME:21,IP:18},
+"25L31A4626":{LAC:25,Chem:25,EG:30,BCME:22.5,IP:23.5},
+"25L31A4627":{LAC:22,Chem:25,EG:23,BCME:21,IP:16},
+"25L31A4628":{LAC:13,Chem:9,EG:22,BCME:8,IP:13.5},
+"25L31A4629":{LAC:13,Chem:23,EG:18,BCME:19,IP:19},
+"25L31A4630":{LAC:22,Chem:19,EG:30,BCME:21.25,IP:20},
+"25L31A4631":{LAC:25,Chem:25,EG:28,BCME:21,IP:23.5},
+"25L31A4632":{LAC:11,Chem:5,EG:20,BCME:11.5,IP:8.5},
+"25L31A4633":{LAC:21,Chem:null,EG:null,BCME:18.75,IP:null},
+"25L31A4634":{LAC:21,Chem:21,EG:27,BCME:23.25,IP:20.5},
+"25L31A4635":{LAC:19,Chem:20,EG:27,BCME:20.5,IP:19.5},
+"25L31A4636":{LAC:15,Chem:12,EG:20,BCME:15,IP:13},
+"25L31A4637":{LAC:24,Chem:25,EG:30,BCME:24,IP:22},
+"25L31A4638":{LAC:23,Chem:23,EG:30,BCME:19.5,IP:19.5},
+"25L31A4639":{LAC:25,Chem:24,EG:30,BCME:21.5,IP:20.5},
+"25L31A4640":{LAC:25,Chem:25,EG:30,BCME:22,IP:22},
+"25L31A4641":{LAC:23,Chem:19,EG:25,BCME:21.25,IP:17},
+"25L31A4642":{LAC:25,Chem:24,EG:28,BCME:22.5,IP:23.5},
+"25L31A4643":{LAC:10,Chem:12,EG:15,BCME:15,IP:16.5},
+"25L31A4644":{LAC:19,Chem:22,EG:24,BCME:18.25,IP:14.5},
+"25L31A4645":{LAC:25,Chem:25,EG:30,BCME:19.25,IP:23.5},
+"25L31A4646":{LAC:23,Chem:19,EG:26,BCME:20,IP:13.5},
+"25L31A4647":{LAC:20,Chem:22,EG:17,BCME:18.5,IP:16.5},
+"25L31A4648":{LAC:24,Chem:25,EG:30,BCME:23.25,IP:20.5},
+"25L31A4649":{LAC:23,Chem:19,EG:30,BCME:14.25,IP:14.5},
+"25L31A4650":{LAC:23,Chem:25,EG:30,BCME:24.5,IP:22.5},
+"25L31A4651":{LAC:23,Chem:24,EG:24,BCME:23,IP:18.5},
+"25L31A4652":{LAC:24,Chem:25,EG:28,BCME:22.75,IP:19.5},
+"25L31A4653":{LAC:19,Chem:18,EG:12,BCME:16,IP:17.5},
+"25L31A4654":{LAC:24,Chem:24,EG:22,BCME:21,IP:21},
+"25L31A4655":{LAC:25,Chem:25,EG:30,BCME:24,IP:21},
+"25L31A4656":{LAC:25,Chem:25,EG:30,BCME:21.25,IP:23.5},
+"25L31A4657":{LAC:25,Chem:25,EG:26,BCME:21.75,IP:13},
+"25L31A4658":{LAC:18,Chem:22,EG:26,BCME:19.5,IP:10.5},
+"25L31A4659":{LAC:24,Chem:25,EG:25,BCME:20.5,IP:21.5},
+"25L31A4660":{LAC:18,Chem:24,EG:19,BCME:18.5,IP:16},
+"25L31A4661":{LAC:24,Chem:23,EG:30,BCME:24.5,IP:23.5},
+"25L31A4662":{LAC:21,Chem:19,EG:30,BCME:13,IP:9.5},
+"25L31A4663":{LAC:23,Chem:25,EG:30,BCME:21.75,IP:19.5},
+"25L31A4664":{LAC:25,Chem:25,EG:27,BCME:21.75,IP:23},
+"25L31A4665":{LAC:24,Chem:20,EG:25,BCME:21.75,IP:17},
+"25L31A4666":{LAC:21,Chem:16,EG:26,BCME:17.75,IP:18},
+"25L31A4667":{LAC:null,Chem:null,EG:null,BCME:null,IP:null},
+"25L31A4668":{LAC:23,Chem:25,EG:23,BCME:21,IP:21},
+"25L31A4669":{LAC:24,Chem:25,EG:30,BCME:20.75,IP:21.5},
+"25L31A4670":{LAC:22,Chem:15,EG:28,BCME:21,IP:19},
+"25L31A4671":{LAC:24,Chem:25,EG:30,BCME:20.5,IP:22},
+"25L31A4672":{LAC:3,Chem:2,EG:23,BCME:13.5,IP:2.5},
+"25L31A4673":{LAC:24,Chem:24,EG:30,BCME:23.75,IP:20.5},
+"25L31A4674":{LAC:18,Chem:25,EG:30,BCME:22.75,IP:21.5}
+};
+
+// Class 1 real final semester data from PDF
+const CLASS1_FINAL = {
+"25L31A4601":{LAC:'D',EG:'C',Chem:'MP',BCME:'C',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'B',HW:'S',SemSGPA:6.03,CGPA:6.03},
+"25L31A4602":{LAC:'A',EG:'D',Chem:'B',BCME:'C',IP:'D',ChemLAB:'A',CPLAB:'B',EWS:'B',HW:'S',SemSGPA:7.64,CGPA:7.64},
+"25L31A4603":{LAC:'D',EG:'C',Chem:'B',BCME:'C',IP:'C',ChemLAB:'A',CPLAB:'S',EWS:'B',HW:'S',SemSGPA:7.33,CGPA:7.33},
+"25L31A4604":{LAC:'F',EG:'F',Chem:'H',BCME:'D',IP:'F',ChemLAB:'A',CPLAB:'B',EWS:'A',HW:'S',SemSGPA:3.72,CGPA:3.72},
+"25L31A4605":{LAC:'C',EG:'B',Chem:'A',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.33,CGPA:8.33},
+"25L31A4606":{LAC:'S',EG:'B',Chem:'B',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.64,CGPA:8.64},
+"25L31A4607":{LAC:'C',EG:'C',Chem:'S',BCME:'C',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:7.85,CGPA:7.85},
+"25L31A4608":{LAC:'A',EG:'B',Chem:'B',BCME:'B',IP:'D',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.18,CGPA:8.18},
+"25L31A4609":{LAC:'E',EG:'C',Chem:'MP',BCME:'D',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:4.79,CGPA:4.79},
+"25L31A4610":{LAC:'C',EG:'C',Chem:'S',BCME:'B',IP:'C',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.15,CGPA:8.15},
+"25L31A4611":{LAC:'A',EG:'B',Chem:'S',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'B',EWS:'A',HW:'S',SemSGPA:8.64,CGPA:8.64},
+"25L31A4612":{LAC:'D',EG:'D',Chem:'E',BCME:'D',IP:'E',ChemLAB:'B',CPLAB:'B',EWS:'A',HW:'S',SemSGPA:6.28,CGPA:6.28},
+"25L31A4613":{LAC:'B',EG:'C',Chem:'S',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.31,CGPA:8.31},
+"25L31A4614":{LAC:'B',EG:'C',Chem:'B',BCME:'B',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'B',HW:'S',SemSGPA:7.56,CGPA:7.56},
+"25L31A4615":{LAC:'S',EG:'B',Chem:'S',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'S',HW:'S',SemSGPA:9.23,CGPA:9.23},
+"25L31A4616":{LAC:'S',EG:'A',Chem:'A',BCME:'D',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.23,CGPA:8.23},
+"25L31A4617":{LAC:'E',EG:'C',Chem:'B',BCME:'C',IP:'E',ChemLAB:'S',CPLAB:'A',EWS:'S',HW:'S',SemSGPA:7.15,CGPA:7.15},
+"25L31A4618":{LAC:'S',EG:'A',Chem:'S',BCME:'A',IP:'A',ChemLAB:'S',CPLAB:'A',EWS:'S',HW:'S',SemSGPA:9.54,CGPA:9.54},
+"25L31A4619":{LAC:'C',EG:'C',Chem:'C',BCME:'C',IP:'E',ChemLAB:'S',CPLAB:'A',EWS:'A',HW:'A',SemSGPA:7.21,CGPA:7.21},
+"25L31A4620":{LAC:'A',EG:'B',Chem:'C',BCME:'C',IP:'E',ChemLAB:'S',CPLAB:'A',EWS:'S',HW:'A',SemSGPA:7.69,CGPA:7.69},
+"25L31A4621":{LAC:'C',EG:'C',Chem:'B',BCME:'B',IP:'D',ChemLAB:'A',CPLAB:'S',EWS:'S',HW:'S',SemSGPA:7.85,CGPA:7.85},
+"25L31A4622":{LAC:'S',EG:'A',Chem:'B',BCME:'A',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'S',HW:'S',SemSGPA:9.26,CGPA:9.26},
+"25L31A4623":{LAC:'S',EG:'C',Chem:'S',BCME:'A',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'S',HW:'S',SemSGPA:8.95,CGPA:8.95},
+"25L31A4624":{LAC:'S',EG:'A',Chem:'S',BCME:'S',IP:'B',ChemLAB:'A',CPLAB:'C',EWS:'A',HW:'S',SemSGPA:9.33,CGPA:9.33},
+"25L31A4625":{LAC:'S',EG:'B',Chem:'B',BCME:'B',IP:'C',ChemLAB:'A',CPLAB:'S',EWS:'S',HW:'S',SemSGPA:9.03,CGPA:9.03},
+"25L31A4626":{LAC:'S',EG:'A',Chem:'A',BCME:'B',IP:'C',ChemLAB:'A',CPLAB:'S',EWS:'S',HW:'S',SemSGPA:9.03,CGPA:9.03},
+"25L31A4627":{LAC:'A',EG:'B',Chem:'A',BCME:'A',IP:'B',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.69,CGPA:8.69},
+"25L31A4628":{LAC:'E',EG:'D',Chem:'C',BCME:'B',IP:'E',ChemLAB:'B',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:6.51,CGPA:6.51},
+"25L31A4629":{LAC:'E',EG:'D',Chem:'E',BCME:'C',IP:'E',ChemLAB:'B',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:6.21,CGPA:6.21},
+"25L31A4630":{LAC:'S',EG:'A',Chem:'S',BCME:'A',IP:'S',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:9.21,CGPA:9.21},
+"25L31A4631":{LAC:'A',EG:'A',Chem:'S',BCME:'A',IP:'B',ChemLAB:'S',CPLAB:'S',EWS:'S',HW:'A',SemSGPA:8.97,CGPA:8.97},
+"25L31A4632":{LAC:'C',EG:'B',Chem:'E',BCME:'D',IP:'F',ChemLAB:'A',CPLAB:'B',EWS:'A',HW:'A',SemSGPA:6.00,CGPA:6.00},
+"25L31A4633":{LAC:'A',EG:'A',Chem:'A',BCME:'B',IP:'A',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.72,CGPA:8.72},
+"25L31A4634":{LAC:'A',EG:'B',Chem:'A',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'B',HW:'S',SemSGPA:8.03,CGPA:8.03},
+"25L31A4635":{LAC:'B',EG:'A',Chem:'C',BCME:'B',IP:'D',ChemLAB:'S',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:7.85,CGPA:7.85},
+"25L31A4636":{LAC:'E',EG:'E',Chem:'D',BCME:'E',IP:'E',ChemLAB:'S',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:6.15,CGPA:6.15},
+"25L31A4637":{LAC:'S',EG:'B',Chem:'D',BCME:'A',IP:'A',ChemLAB:'S',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:9.31,CGPA:9.31},
+"25L31A4638":{LAC:'A',EG:'B',Chem:'A',BCME:'D',IP:'D',ChemLAB:'A',CPLAB:'B',EWS:'A',HW:'S',SemSGPA:7.87,CGPA:7.87},
+"25L31A4639":{LAC:'S',EG:'B',Chem:'B',BCME:'C',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'S',HW:'S',SemSGPA:8.51,CGPA:8.51},
+"25L31A4640":{LAC:'S',EG:'A',Chem:'A',BCME:'B',IP:'A',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:9.15,CGPA:9.15},
+"25L31A4641":{LAC:'A',EG:'B',Chem:'C',BCME:'C',IP:'D',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:7.77,CGPA:7.77},
+"25L31A4642":{LAC:'A',EG:'B',Chem:'A',BCME:'C',IP:'A',ChemLAB:'S',CPLAB:'B',EWS:'A',HW:'S',SemSGPA:8.79,CGPA:8.79},
+"25L31A4643":{LAC:'F',EG:'F',Chem:'C',BCME:'C',IP:'E',ChemLAB:'S',CPLAB:'Y',EWS:'A',HW:'S',SemSGPA:5.08,CGPA:5.08},
+"25L31A4644":{LAC:'C',EG:'C',Chem:'B',BCME:'C',IP:'C',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'A',SemSGPA:7.62,CGPA:7.62},
+"25L31A4645":{LAC:'S',EG:'A',Chem:'S',BCME:'S',IP:'S',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'A',SemSGPA:9.51,CGPA:9.51},
+"25L31A4646":{LAC:'D',EG:'C',Chem:'C',BCME:'B',IP:'D',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:6.87,CGPA:6.87},
+"25L31A4647":{LAC:'D',EG:'D',Chem:'A',BCME:'D',IP:'D',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:7.59,CGPA:7.59},
+"25L31A4648":{LAC:'D',EG:'A',Chem:'A',BCME:'B',IP:'A',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.77,CGPA:8.77},
+"25L31A4649":{LAC:'B',EG:'C',Chem:'C',BCME:'A',IP:'D',ChemLAB:'A',CPLAB:'B',EWS:'S',HW:'S',SemSGPA:7.49,CGPA:7.49},
+"25L31A4650":{LAC:'A',EG:'B',Chem:'S',BCME:'A',IP:'C',ChemLAB:'S',CPLAB:'S',EWS:'S',HW:'S',SemSGPA:8.85,CGPA:8.85},
+"25L31A4651":{LAC:'B',EG:'C',Chem:'B',BCME:'B',IP:'C',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.08,CGPA:8.08},
+"25L31A4652":{LAC:'A',EG:'B',Chem:'S',BCME:'B',IP:'B',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.38,CGPA:8.38},
+"25L31A4653":{LAC:'C',EG:'C',Chem:'A',BCME:'C',IP:'D',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:7.62,CGPA:7.62},
+"25L31A4654":{LAC:'S',EG:'B',Chem:'A',BCME:'C',IP:'A',ChemLAB:'S',CPLAB:'A',EWS:'A',HW:'A',SemSGPA:8.67,CGPA:8.67},
+"25L31A4655":{LAC:'S',EG:'B',Chem:'S',BCME:'B',IP:'A',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'A',SemSGPA:9.15,CGPA:9.15},
+"25L31A4656":{LAC:'B',EG:'B',Chem:'S',BCME:'B',IP:'A',ChemLAB:'S',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.59,CGPA:8.59},
+"25L31A4657":{LAC:'B',EG:'B',Chem:'S',BCME:'B',IP:'C',ChemLAB:'S',CPLAB:'S',EWS:'S',HW:'A',SemSGPA:8.59,CGPA:8.59},
+"25L31A4658":{LAC:'B',EG:'C',Chem:'B',BCME:'B',IP:'C',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'Y',SemSGPA:7.92,CGPA:7.92},
+"25L31A4659":{LAC:'A',EG:'B',Chem:'A',BCME:'B',IP:'B',ChemLAB:'S',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:8.69,CGPA:8.69},
+"25L31A4660":{LAC:'F',EG:'C',Chem:'A',BCME:'B',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:6.79,CGPA:6.79},
+"25L31A4661":{LAC:'A',EG:'B',Chem:'A',BCME:'C',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:9.00,CGPA:9.00},
+"25L31A4662":{LAC:'A',EG:'B',Chem:'A',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:7.72,CGPA:7.72},
+"25L31A4663":{LAC:'B',EG:'C',Chem:'D',BCME:'D',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.33,CGPA:8.33},
+"25L31A4664":{LAC:'F',EG:'D',Chem:'A',BCME:'A',IP:'E',ChemLAB:'B',CPLAB:'A',EWS:'B',HW:'S',SemSGPA:4.59,CGPA:4.59},
+"25L31A4665":{LAC:'A',EG:'B',Chem:'S',BCME:'B',IP:'A',ChemLAB:'B',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:7.56,CGPA:7.56},
+"25L31A4666":{LAC:'B',EG:'D',Chem:'S',BCME:'B',IP:'B',ChemLAB:'C',CPLAB:'A',EWS:'A',HW:'A',SemSGPA:9.23,CGPA:9.23},
+"25L31A4667":{LAC:'S',EG:'C',Chem:'S',BCME:'B',IP:'F',ChemLAB:'C',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:9.08,CGPA:9.08},
+"25L31A4668":{LAC:'A',EG:'B',Chem:'S',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'S',EWS:'S',HW:'A',SemSGPA:8.08,CGPA:8.08},
+"25L31A4669":{LAC:'C',EG:'S',Chem:'A',BCME:'B',IP:'C',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'A',SemSGPA:9.62,CGPA:9.62},
+"25L31A4670":{LAC:'S',EG:'S',Chem:'A',BCME:'A',IP:'A',ChemLAB:'A',CPLAB:'S',EWS:'A',HW:'S',SemSGPA:9.62,CGPA:9.62},
+"25L31A4671":{LAC:'F',EG:'D',Chem:'F',BCME:'E',IP:'E',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:4.56,CGPA:4.56},
+"25L31A4672":{LAC:'S',EG:'A',Chem:'S',BCME:'B',IP:'A',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:9.08,CGPA:9.08},
+"25L31A4673":{LAC:'A',EG:'D',Chem:'A',BCME:'B',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.69,CGPA:8.69},
+"25L31A4674":{LAC:'A',EG:'D',Chem:'C',BCME:'D',IP:'D',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.64,CGPA:8.64}
+};
+
+// Generate synthetic data for classes 2–5
+const GRADES_DIST = ['S','S','A','A','A','B','B','B','C','C','D','E','F'];
+const MID_RANGES = [[20,25],[15,24],[18,25],[12,20],[8,15]];
+
+function genMid(seed,roll,cls) {
+  const r = seededRand(seed);
+  const tier = r() < 0.6 ? 0 : r() < 0.85 ? 1 : r() < 0.95 ? 2 : 3;
+  const range = MID_RANGES[Math.min(tier, MID_RANGES.length-1)];
+  const obj = {};
+  SUBJ.forEach(s => {
+    if(r() < 0.04) { obj[s] = null; return; }
+    const max = MID_MAX[s];
+    const pct = range[0]/25 + r()*(range[1]-range[0])/25;
+    obj[s] = Math.round(max * pct * 10) / 10;
+  });
+  return obj;
+}
+
+function genFinal(seed,midData) {
+  const r = seededRand(seed + 9999);
+  const midTotal = SUBJ.reduce((s,k)=>s+(midData[k]||0),0);
+  const midMax = Object.values(MID_MAX).reduce((a,b)=>a+b,0);
+  const pct = midTotal / midMax;
+  const baseSGPA = 5.0 + pct * 5.0 + (r()-0.5)*0.8;
+  const sgpa = Math.max(3.5, Math.min(10.0, Math.round(baseSGPA*100)/100));
+  const gradeForPct = (p) => {
+    if(p>0.9) return 'S'; if(p>0.8) return 'A';
+    if(p>0.7) return 'B'; if(p>0.6) return 'C';
+    if(p>0.5) return 'D'; if(p>0.35) return 'E'; return 'F';
+  };
+  const obj = {SemSGPA:sgpa, CGPA:sgpa};
+  SUBJ.forEach(s=>{
+    const mp = midData[s]; if(mp===null||mp===undefined){obj[s]='F';return;}
+    const sp = mp/MID_MAX[s] * (0.7 + r()*0.3);
+    obj[s] = gradeForPct(sp);
+  });
+  obj.ChemLAB = gradeForPct(0.6+r()*0.4);
+  obj.CPLAB = gradeForPct(0.6+r()*0.4);
+  obj.EWS = gradeForPct(0.5+r()*0.5);
+  obj.HW = gradeForPct(0.7+r()*0.3);
+  return obj;
+}
+
+// Build all classes data cache
+const DATA_CACHE = {};
+
+function getClassData(cls) {
+  if(DATA_CACHE[cls]) return DATA_CACHE[cls];
+  const c = CLASSES[cls];
+  const rolls = buildRolls(cls);
+  const mid1 = {}, final_ = {};
+
+  if(cls==='1') {
+    rolls.forEach(r => { mid1[r] = CLASS1_MID1[r] || {LAC:18,Chem:18,EG:24,BCME:18,IP:18}; });
+    rolls.forEach(r => { final_[r] = CLASS1_FINAL[r] || {LAC:'B',EG:'B',Chem:'B',BCME:'B',IP:'B',ChemLAB:'A',CPLAB:'A',EWS:'A',HW:'S',SemSGPA:8.0,CGPA:8.0}; });
+  } else {
+    rolls.forEach((r,i) => {
+      const seed = parseInt(cls)*1000 + i;
+      mid1[r] = genMid(seed, r, cls);
+    });
+    rolls.forEach((r,i) => {
+      const seed = parseInt(cls)*1000 + i + 500;
+      final_[r] = genFinal(seed, mid1[r]);
+    });
+  }
+  DATA_CACHE[cls] = {rolls, mid1, final:final_};
+  return DATA_CACHE[cls];
+}
+
+// ═══════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════
+let currentUser = null;
+let activeRole = 'student';
+let messages = {
+  "1":[], "2":[], "3":[], "4":[], "5":[]
+};
+
+function setRole(r, el) {
+  activeRole = r;
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const cg = document.getElementById('classGroup');
+  const idLbl = document.getElementById('idLbl');
+  const hint = document.getElementById('loginHint');
+  const lid = document.getElementById('loginId');
+  lid.value=''; document.getElementById('loginPwd').value='';
+  document.getElementById('errMsg').style.display='none';
+  if(r==='student'){
+    cg.style.display='block'; idLbl.textContent='Roll Number';
+    hint.textContent='Roll No. as ID · Password = last 2 digits (e.g. 01, 47…)';
+  } else if(r==='faculty'){
+    cg.style.display='none'; idLbl.textContent='Faculty ID';
+    hint.textContent='faculty4678 / faculty5532 / faculty6641 / faculty7790 / faculty8801';
+  } else {
+    cg.style.display='none'; idLbl.textContent='Admin ID';
+    hint.textContent='ID: admin · Password: faculty4646';
+  }
+}
+
+function doLogin(){
+  const id = document.getElementById('loginId').value.trim().toUpperCase();
+  const pwd = document.getElementById('loginPwd').value.trim();
+  const err = document.getElementById('errMsg');
+  err.style.display='none';
+
+  if(activeRole==='student'){
+    const cls = document.getElementById('loginClass').value;
+    const {rolls} = getClassData(cls);
+    const roll = id;
+    if(!rolls.includes(roll)){showErr('Roll number not found in selected class.');return;}
+    const lastTwo = roll.slice(-2);
+    if(pwd!==lastTwo){showErr('Incorrect password. Use last 2 digits of roll number.');return;}
+    currentUser={role:'student',id:roll,cls};
+  } else if(activeRole==='faculty'){
+    const fid = id.toLowerCase();
+    const f = FACULTY[fid];
+    if(!f || pwd!==fid){showErr('Invalid faculty credentials.');return;}
+    currentUser={role:'faculty',id:fid,cls:f.cls,name:f.name};
+  } else {
+    if(id!=='ADMIN'||pwd!=='faculty4646'){showErr('Invalid admin credentials.');return;}
+    currentUser={role:'admin',id:'admin'};
+  }
+
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  setupApp();
+}
+
+['loginPwd','loginId'].forEach(el=>{
+  document.getElementById(el).addEventListener('keydown',e=>{
+    if(e.key==='Enter')doLogin();
+  });
+});
+
+function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';}
+
+function logout(){
+  currentUser=null;
+  document.getElementById('appShell').classList.add('hidden');
+  document.getElementById('loginPage').classList.remove('hidden');
+  document.getElementById('loginId').value='';
+  document.getElementById('loginPwd').value='';
+}
+
+// ═══════════════════════════════════════════════════
+// APP SETUP
+// ═══════════════════════════════════════════════════
+function setupApp(){
+  const {role,id,cls} = currentUser;
+  const clsInfo = cls ? CLASSES[cls] : null;
+
+  document.getElementById('sbTitle').textContent = role==='admin'?'VIIT Admin': clsInfo?clsInfo.name:'VIIT';
+  document.getElementById('sbSub').textContent = role==='admin'?'All Classes': clsInfo?clsInfo.branch+' · 2025-26':'';
+  document.getElementById('avatarEl').textContent = role==='admin'?'AD': role==='faculty'?'FC':id.slice(-2);
+  document.getElementById('dispName').textContent = role==='admin'?'Administrator': role==='faculty'?currentUser.name:id;
+  document.getElementById('dispRole').textContent = role==='admin'?'Admin': role==='faculty'?'Faculty – '+(clsInfo?clsInfo.name:''):clsInfo?clsInfo.name+' Student':'Student';
+
+  if(role==='student') buildStudentUI();
+  else if(role==='faculty') buildFacultyUI();
+  else buildAdminUI();
+}
+
+// ═══════════════════════════════════════════════════
+// STUDENT UI
+// ═══════════════════════════════════════════════════
+function buildStudentUI(){
+  document.getElementById('navLinks').innerHTML=`
+    <div class="nav-item active" onclick="activateNav(this,'sDash')">📊 My Dashboard</div>
+    <div class="nav-item" onclick="activateNav(this,'sMarks')">📋 My Marks</div>
+    <div class="nav-item" onclick="activateNav(this,'sProgress')">📄 Progress Card</div>`;
+  const roll = currentUser.id, cls = currentUser.cls;
+  const {mid1,final:fin} = getClassData(cls);
+  const m = mid1[roll], f = fin[roll];
+  const midTotal = SUBJ.reduce((s,k)=>s+(m[k]||0),0);
+  const midMaxT = Object.values(MID_MAX).reduce((a,b)=>a+b,0);
+
+  document.getElementById('mainArea').innerHTML = `
+  <div class="page active" id="sDash">
+    <div class="pg-title">My Dashboard</div>
+    <div class="pg-sub">${roll} · ${CLASSES[cls].name} · ${CLASSES[cls].branch}</div>
+    <div class="s-hero">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
+        <div>
+          <div style="font-size:.8rem;color:#a5b4fc;margin-bottom:.25rem">SEMESTER SGPA</div>
+          <div style="font-size:3rem;font-weight:800;line-height:1">${f.SemSGPA}</div>
+          <div style="font-size:.75rem;color:#818cf8;margin-top:.2rem">CGPA: ${f.CGPA}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.8rem;color:#a5b4fc">Mid-1 Total</div>
+          <div style="font-size:1.8rem;font-weight:700">${midTotal.toFixed(1)} <span style="font-size:1rem;opacity:.6">/ ${midMaxT}</span></div>
+          <div style="font-size:.75rem;color:#818cf8">${((midTotal/midMaxT)*100).toFixed(1)}%</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-grid">${SUBJ.map(s=>`
+      <div class="stat-card">
+        <div class="stat-val">${m[s]!==null&&m[s]!==undefined?m[s]:'AB'}</div>
+        <div class="stat-lbl">${s} / ${MID_MAX[s]}</div>
+        <div style="margin-top:.35rem">${gradePill(f[s])}</div>
+      </div>`).join('')}</div>
+    ${guidanceBlock(m)}
+  </div>
+  <div class="page" id="sMarks">${studentMarksPage(roll,cls)}</div>
+  <div class="page" id="sProgress">${progressCardHTML(roll,cls)}</div>`;
+}
+
+function studentMarksPage(roll,cls){
+  const {mid1,final:fin} = getClassData(cls);
+  const m=mid1[roll],f=fin[roll];
+  return `<div class="pg-title">My Marks</div><div class="pg-sub">Mid-term 1 & Final Semester</div>
+  <div class="tbl-wrap" style="margin-bottom:1rem"><div class="tbl-hdr"><span class="tbl-ttl">Mid-term 1</span></div>
+  <table><thead><tr><th>Subject</th><th>Marks</th><th>Max</th><th>%</th></tr></thead><tbody>
+  ${SUBJ.map(s=>{const v=m[s];const max=MID_MAX[s];return`<tr>
+    <td><b>${s}</b><br><span style="font-size:.71rem;color:#475569">${SUBNAMES[s]}</span></td>
+    <td>${v!==null&&v!==undefined?v:'Absent'}</td><td>${max}</td>
+    <td>${v!==null&&v!==undefined?((v/max)*100).toFixed(1)+'%':'–'}</td></tr>`}).join('')}
+  </tbody></table></div>
+  <div class="tbl-wrap"><div class="tbl-hdr"><span class="tbl-ttl">Final Grades & SGPA</span></div>
+  <table><thead><tr><th>Subject</th><th>Grade</th></tr></thead><tbody>
+  ${['LAC','EG','Chem','BCME','IP','ChemLAB','CPLAB','EWS','HW'].map(s=>`<tr><td>${s}</td><td>${gradePill(f[s])}</td></tr>`).join('')}
+  <tr><td style="font-weight:700;color:#a5b4fc">Semester SGPA</td><td style="font-weight:800;font-size:1rem;color:#818cf8">${f.SemSGPA}</td></tr>
+  <tr><td style="font-weight:700;color:#a5b4fc">CGPA</td><td style="font-weight:800;color:#818cf8">${f.CGPA}</td></tr>
+  </tbody></table></div>`;
+}
+
+function progressCardHTML(roll,cls,forPrint=false){
+  const {mid1,final:fin} = getClassData(cls);
+  const m=mid1[roll],f=fin[roll];
+  const midTotal=SUBJ.reduce((s,k)=>s+(m[k]||0),0);
+  const midMaxT=Object.values(MID_MAX).reduce((a,b)=>a+b,0);
+  return `${forPrint?'':'<div class="pg-title">Progress Card</div><div class="pg-sub">Printable academic record</div>'}
+  <button class="act-btn" onclick="window.print()" style="margin-bottom:1rem">🖨 Print / Save PDF</button>
+  <div class="pc-wrap" id="pcCard">
+    <div class="pc-hdr">
+      <div>
+        <div style="font-size:1rem;font-weight:700;color:#f1f5f9">Vignan's Institute of Information Technology</div>
+        <div style="font-size:.75rem;color:#64748b;margin-top:.15rem">B.Tech I Semester (VR23) · ${CLASSES[cls].name} · ${CLASSES[cls].branch} · Jan 2026</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.72rem;color:#64748b">Hall Ticket No.</div>
+        <div style="font-size:1rem;font-weight:700;color:#f1f5f9">${roll}</div>
+        <span class="stat-badge b-blue" style="margin-top:.3rem;display:inline-block">Sem SGPA: ${f.SemSGPA} &nbsp;|&nbsp; CGPA: ${f.CGPA}</span>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:.78rem;font-weight:600;color:#94a3b8;margin-bottom:.5rem">Mid-term 1 Marks</div>
+    <div class="pc-marks-grid">${SUBJ.map(s=>`<div class="pc-m">
+      <div class="pc-mv">${m[s]!==null&&m[s]!==undefined?m[s]:'AB'}</div>
+      <div class="pc-ms">${s}</div><div class="pc-mm">/ ${MID_MAX[s]}</div></div>`).join('')}</div>
+    <div class="info-row"><span class="il">Mid-1 Total</span><span class="iv">${midTotal.toFixed(1)} / ${midMaxT}</span></div>
+    <div class="divider"></div>
+    <div style="font-size:.78rem;font-weight:600;color:#94a3b8;margin-bottom:.5rem">Final Semester Grades</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
+    ${['LAC','EG','Chem','BCME','IP','ChemLAB','CPLAB','EWS','HW'].map(s=>`
+      <div class="info-row"><span class="il">${s}</span><span>${gradePill(f[s])}</span></div>`).join('')}
+    </div>
+    <div class="divider"></div>
+    <div class="info-row"><span class="il" style="font-weight:600">Semester SGPA</span><span class="iv" style="font-size:1.1rem;color:#a5b4fc">${f.SemSGPA}</span></div>
+    <div class="info-row"><span class="il" style="font-weight:600">CGPA</span><span class="iv" style="color:#818cf8">${f.CGPA}</span></div>
+    <div style="margin-top:2rem;display:flex;justify-content:space-between;font-size:.72rem;color:#475569">
+      <span>Class Teacher's Signature</span><span>HOD's Signature</span><span>Controller of Examinations</span>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// FACULTY UI
+// ═══════════════════════════════════════════════════
+function buildFacultyUI(){
+  document.getElementById('navLinks').innerHTML=`
+    <div class="nav-item active" onclick="activateNav(this,'fDash')">📊 Class Overview</div>
+    <div class="nav-item" onclick="activateNav(this,'fStudents')">👥 All Students</div>
+    <div class="nav-item" onclick="activateNav(this,'fIndividual')">👤 Student Detail</div>
+    <div class="nav-item" onclick="activateNav(this,'fProgress')">📄 Progress Cards</div>
+    <div class="nav-item" onclick="activateNav(this,'fRanking')">🏆 Rankings</div>
+    <div class="nav-item" onclick="activateNav(this,'fUpload')">📤 Upload Marks</div>
+    <div class="nav-item" onclick="activateNav(this,'fMessages')">💬 Messages</div>`;
+  renderFacultyPages();
+}
+
+function renderFacultyPages(){
+  const cls = currentUser.cls;
+  const {rolls,mid1,final:fin} = getClassData(cls);
+  const allSGPA = rolls.map(r=>fin[r].SemSGPA);
+  const avgSGPA = (allSGPA.reduce((a,b)=>a+b,0)/allSGPA.length).toFixed(2);
+  const topSGPA = Math.max(...allSGPA).toFixed(2);
+  const failing = rolls.filter(r=>SUBJ.some(s=>fin[r][s]==='F')).length;
+  const above9 = rolls.filter(r=>fin[r].SemSGPA>=9).length;
+
+  // Subject averages
+  const subAvg = {};
+  SUBJ.forEach(s=>{
+    const v=rolls.map(r=>mid1[r][s]).filter(v=>v!==null&&v!==undefined);
+    subAvg[s]=(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1);
+  });
+
+  document.getElementById('mainArea').innerHTML=`
+  <div class="page active" id="fDash">
+    <div class="pg-title">${CLASSES[cls].name} – Overview</div>
+    <div class="pg-sub">${CLASSES[cls].branch} · ${rolls.length} students · B.Tech I Sem 2025-26</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val">${rolls.length}</div><div class="stat-lbl">Total students</div></div>
+      <div class="stat-card"><div class="stat-val">${avgSGPA}</div><div class="stat-lbl">Avg Sem SGPA</div></div>
+      <div class="stat-card"><div class="stat-val">${topSGPA}</div><div class="stat-lbl">Highest SGPA</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#4ade80">${above9}</div><div class="stat-lbl">SGPA ≥ 9.0</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#f87171">${failing}</div><div class="stat-lbl">F grade (any)</div></div>
+    </div>
+    <div class="chart-grid">
+      ${subjectAvgChart(subAvg)}
+      ${gradeDistChart(rolls,fin)}
+    </div>
+    ${sgpaDistChart(rolls,fin)}
+  </div>
+  <div class="page" id="fStudents">${allStudentsTable(cls)}</div>
+  <div class="page" id="fIndividual">${individualSelector(cls)}</div>
+  <div class="page" id="fProgress">${progressSelector(cls)}</div>
+  <div class="page" id="fRanking">${rankingPage(cls)}</div>
+  <div class="page" id="fUpload">${uploadPage()}</div>
+  <div class="page" id="fMessages">${messagesPage(cls)}</div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════════════════
+function subjectAvgChart(subAvg){
+  const colors={LAC:'#818cf8',Chem:'#34d399',EG:'#fb923c',BCME:'#f472b6',IP:'#38bdf8'};
+  return `<div class="chart-card">
+    <div class="chart-title">Mid-1 Subject Averages</div>
+    ${SUBJ.map(s=>{const pct=(subAvg[s]/MID_MAX[s]*100);return`
+    <div class="bar-row">
+      <div class="bar-lbl">${s}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[s]}"><span>${subAvg[s]}</span></div></div>
+      <div class="bar-ext">${pct.toFixed(0)}%</div>
+    </div>`}).join('')}
+  </div>`;
+}
+
+function gradeDistChart(rolls,fin){
+  const gc={S:0,A:0,B:0,C:0,D:0,E:0,F:0};
+  rolls.forEach(r=>SUBJ.forEach(s=>{const g=fin[r][s];if(gc[g]!==undefined)gc[g]++;}));
+  const total=rolls.length*SUBJ.length;
+  const colors={S:'#4ade80',A:'#38bdf8',B:'#a5b4fc',C:'#fbbf24',D:'#fb923c',E:'#e879f9',F:'#f87171'};
+  return `<div class="chart-card">
+    <div class="chart-title">Final Grade Distribution</div>
+    ${Object.entries(gc).map(([g,cnt])=>{const pct=(cnt/total*100);return`
+    <div class="bar-row">
+      <div class="bar-lbl">Grade ${g}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct,1)}%;background:${colors[g]}"><span>${cnt}</span></div></div>
+      <div class="bar-ext">${pct.toFixed(1)}%</div>
+    </div>`}).join('')}
+  </div>`;
+}
+
+function sgpaDistChart(rolls,fin){
+  const ranges=[
+    {lbl:'≥ 9.0 (Outstanding)',min:9,max:11,col:'#4ade80'},
+    {lbl:'8.0 – 8.99 (Excellent)',min:8,max:9,col:'#38bdf8'},
+    {lbl:'7.0 – 7.99 (Good)',min:7,max:8,col:'#a5b4fc'},
+    {lbl:'6.0 – 6.99 (Average)',min:6,max:7,col:'#fbbf24'},
+    {lbl:'< 6.0 (Needs Support)',min:0,max:6,col:'#f87171'}
+  ];
+  const total=rolls.length;
+  return `<div class="chart-card" style="margin-bottom:1.25rem">
+    <div class="chart-title">Semester SGPA Distribution (${total} students)</div>
+    ${ranges.map(r=>{const cnt=rolls.filter(ro=>fin[ro].SemSGPA>=r.min&&fin[ro].SemSGPA<r.max).length;const pct=(cnt/total*100);return`
+    <div class="bar-row">
+      <div class="bar-lbl" style="width:150px;text-align:right;font-size:.71rem">${r.lbl}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(pct,1)}%;background:${r.col}"><span>${cnt}</span></div></div>
+      <div class="bar-ext">${pct.toFixed(1)}%</div>
+    </div>`}).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// TABLES & PAGES
+// ═══════════════════════════════════════════════════
+function allStudentsTable(cls){
+  const {rolls,mid1,final:fin}=getClassData(cls);
+  const rows=rolls.map((r,i)=>{
+    const m=mid1[r],f=fin[r];
+    const mt=SUBJ.reduce((s,k)=>s+(m[k]||0),0);
+    const hasFail=SUBJ.some(s=>f[s]==='F');
+    return`<tr>
+      <td>${i+1}</td><td style="font-weight:600;color:#e2e8f0">${r}</td>
+      ${SUBJ.map(s=>`<td>${m[s]!==null&&m[s]!==undefined?m[s]:'AB'}</td>`).join('')}
+      <td><b>${mt.toFixed(1)}</b></td>
+      <td style="font-weight:700;color:${hasFail?'#f87171':'#a5b4fc'}">${f.SemSGPA}</td>
+      <td>${f.CGPA}</td>
+    </tr>`;}).join('');
+  return`<div class="pg-title">All Students</div><div class="pg-sub">${CLASSES[cls].name} · ${rolls.length} students</div>
+  <div class="tbl-wrap">
+    <div class="tbl-hdr"><span class="tbl-ttl">Complete Record</span>
+    <input class="search-box" placeholder="Search roll no…" oninput="filterTbl(this,'mainTbl')"></div>
+    <div style="overflow-x:auto">
+    <table id="mainTbl"><thead><tr><th>#</th><th>Roll No.</th>
+    ${SUBJ.map(s=>`<th>${s}</th>`).join('')}<th>Total</th><th>Sem SGPA</th><th>CGPA</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></div>`;
+}
+
+function filterTbl(inp,tid){
+  const q=inp.value.toLowerCase();
+  document.querySelectorAll('#'+tid+' tbody tr').forEach(r=>{
+    r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';
+  });
+}
+
+function individualSelector(cls){
+  const {rolls}=getClassData(cls);
+  const opts=rolls.map((r,i)=>`<option value="${r}">${String(i+1).padStart(2,'0')} · ${r}</option>`).join('');
+  return`<div class="pg-title">Student Detail</div><div class="pg-sub">Deep dive for any student</div>
+  <div class="sel-row"><div class="sel-grp"><label>Select student</label>
+  <select id="iSel" onchange="showStudentDetail('${cls}')"><option value="">-- choose --</option>${opts}</select>
+  </div></div><div id="iContent"></div>`;
+}
+
+function showStudentDetail(cls){
+  const roll=document.getElementById('iSel').value;
+  if(!roll){document.getElementById('iContent').innerHTML='';return;}
+  const {mid1,final:fin}=getClassData(cls);
+  const m=mid1[roll],f=fin[roll];
+  const mt=SUBJ.reduce((s,k)=>s+(m[k]||0),0);
+  const mtMax=Object.values(MID_MAX).reduce((a,b)=>a+b,0);
+  document.getElementById('iContent').innerHTML=`
+  <div class="s-hero" style="margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+      <div><div style="font-size:.8rem;color:#a5b4fc">SEMESTER SGPA</div>
+        <div style="font-size:2.5rem;font-weight:800">${f.SemSGPA}</div>
+        <div style="font-size:.75rem;color:#818cf8">CGPA: ${f.CGPA}</div>
+      </div>
+      <div style="text-align:right"><div style="font-size:.8rem;color:#a5b4fc">Mid-1</div>
+        <div style="font-size:1.8rem;font-weight:700">${mt.toFixed(1)}/${mtMax}</div>
+        <div style="font-size:.75rem;color:#818cf8">${((mt/mtMax)*100).toFixed(1)}%</div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-grid">${SUBJ.map(s=>`<div class="stat-card">
+    <div class="stat-val">${m[s]!==null&&m[s]!==undefined?m[s]:'AB'}</div>
+    <div class="stat-lbl">${s} / ${MID_MAX[s]}</div>
+    <div style="margin-top:.35rem">${gradePill(f[s])}</div></div>`).join('')}</div>
+  <div class="tbl-wrap"><div class="tbl-hdr"><span class="tbl-ttl">All Grades – ${roll}</span></div>
+  <table><thead><tr><th>Subject</th><th>Mid-1</th><th>Grade</th></tr></thead><tbody>
+  ${SUBJ.map(s=>`<tr><td>${SUBNAMES[s]}</td><td>${m[s]??'AB'} / ${MID_MAX[s]}</td><td>${gradePill(f[s])}</td></tr>`).join('')}
+  <tr><td>Chemistry Lab</td><td>–</td><td>${gradePill(f.ChemLAB)}</td></tr>
+  <tr><td>CP Lab</td><td>–</td><td>${gradePill(f.CPLAB)}</td></tr>
+  <tr><td>EWS</td><td>–</td><td>${gradePill(f.EWS)}</td></tr>
+  <tr><td>H&W / Y&S</td><td>–</td><td>${gradePill(f.HW)}</td></tr>
+  </tbody></table></div>
+  ${guidanceBlock(m)}`;
+}
+
+function progressSelector(cls){
+  const {rolls}=getClassData(cls);
+  const opts=rolls.map((r,i)=>`<option value="${r}">${String(i+1).padStart(2,'0')} · ${r}</option>`).join('');
+  return`<div class="pg-title">Generate Progress Cards</div><div class="pg-sub">Select student and print</div>
+  <div class="sel-row"><div class="sel-grp"><label>Select student</label>
+  <select id="pcSel" onchange="genPC('${cls}')"><option value="">-- choose --</option>${opts}</select></div></div>
+  <div id="pcContent"></div>`;
+}
+
+function genPC(cls){
+  const roll=document.getElementById('pcSel').value;
+  if(!roll){document.getElementById('pcContent').innerHTML='';return;}
+  document.getElementById('pcContent').innerHTML=progressCardHTML(roll,cls);
+}
+
+function rankingPage(cls){
+  const {rolls,mid1,final:fin}=getClassData(cls);
+  // Sort by SemSGPA
+  const byFinal=[...rolls].sort((a,b)=>fin[b].SemSGPA-fin[a].SemSGPA);
+  // Sort by Mid-1 total
+  const byMid=[...rolls].sort((a,b)=>{
+    const ta=SUBJ.reduce((s,k)=>s+(mid1[a][k]||0),0);
+    const tb=SUBJ.reduce((s,k)=>s+(mid1[b][k]||0),0);
+    return tb-ta;
+  });
+  const subToppers=SUBJ.map(s=>{
+    const best=rolls.filter(r=>mid1[r][s]!==null&&mid1[r][s]!==undefined)
+      .sort((a,b)=>mid1[b][s]-mid1[a][s])[0];
+    return{s,roll:best,mark:mid1[best][s]};
+  });
+  const rankRow=(r,i,score,label)=>`<div class="topper-item">
+    <div class="rank-b ${i<1?'r1':i<2?'r2':i<3?'r3':'rn'}">${i+1}</div>
+    <div style="flex:1;font-size:.85rem;font-weight:600;color:#e2e8f0">${r}</div>
+    <div style="font-size:.82rem;font-weight:700;color:#a5b4fc">${score}</div>
+  </div>`;
+  return`<div class="pg-title">Rankings – ${CLASSES[cls].name}</div>
+  <div class="pg-sub">Separate rankings by final SGPA and Mid-1 performance</div>
+  <div class="chart-grid">
+    <div>
+      <div class="chart-title" style="margin-bottom:.75rem">🏆 Top 10 – Final Sem SGPA</div>
+      ${byFinal.slice(0,10).map((r,i)=>rankRow(r,i,fin[r].SemSGPA,'SGPA')).join('')}
+    </div>
+    <div>
+      <div class="chart-title" style="margin-bottom:.75rem">📝 Top 10 – Mid-1 Total</div>
+      ${byMid.slice(0,10).map((r,i)=>{
+        const t=SUBJ.reduce((s,k)=>s+(mid1[r][k]||0),0);
+        return rankRow(r,i,t.toFixed(1)+' / '+Object.values(MID_MAX).reduce((a,b)=>a+b,0),'Mid-1');
+      }).join('')}
+    </div>
+  </div>
+  <div class="g-card" style="margin-top:1rem">
+    <div class="chart-title" style="margin-bottom:.75rem">⭐ Mid-1 Subject Toppers</div>
+    <div class="chart-grid" style="margin-bottom:0">
+    ${subToppers.map(({s,roll,mark})=>`<div class="topper-item">
+      <div class="rank-b r1" style="font-size:.68rem">${s}</div>
+      <div style="flex:1;font-size:.85rem;font-weight:600;color:#e2e8f0">${roll}</div>
+      <div style="font-size:.8rem;font-weight:700;color:#a5b4fc">${mark} / ${MID_MAX[s]}</div>
+    </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function uploadPage(){
+  return`<div class="pg-title">Upload Student Marks</div>
+  <div class="pg-sub">Accepted formats: PDF, DOCX, JPEG/PNG</div>
+  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+    ondragover="event.preventDefault();this.classList.add('drag')"
+    ondragleave="this.classList.remove('drag')"
+    ondrop="handleDrop(event)">
+    <input type="file" id="fileInput" accept=".pdf,.docx,.jpg,.jpeg,.png" onchange="handleFile(this)">
+    <div class="upload-icon">📤</div>
+    <div class="upload-title">Click or drag & drop to upload</div>
+    <div class="upload-sub">PDF, DOCX, JPEG, PNG supported · Max 20MB</div>
+  </div>
+  <div class="upload-result" id="uploadResult">
+    <div style="font-size:.9rem;font-weight:600;color:#4ade80;margin-bottom:.4rem">✅ File uploaded successfully</div>
+    <div style="font-size:.8rem;color:#64748b" id="uploadInfo"></div>
+    <div style="margin-top:.75rem;font-size:.8rem;color:#94a3b8">⚠ This is a demo – in the live system, marks would be parsed and saved to the database automatically.</div>
+  </div>
+  <div class="g-card" style="margin-top:1.25rem">
+    <div class="chart-title" style="margin-bottom:.6rem">Format Guide</div>
+    <div style="font-size:.8rem;color:#94a3b8;display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+      <div>📄 <b style="color:#e2e8f0">PDF/DOCX</b> – Structured marks table with Roll No. column</div>
+      <div>🖼 <b style="color:#e2e8f0">JPEG/PNG</b> – Scanned mark sheet (OCR processed)</div>
+      <div>📋 Required columns: Roll No., LAC, Chem, EG, BCME, IP</div>
+      <div>📊 Marks should match max: LAC/Chem/BCME/IP=25, EG=30</div>
+    </div>
+  </div>`;
+}
+
+function handleFile(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=document.getElementById('uploadResult');
+  const ri=document.getElementById('uploadInfo');
+  r.classList.add('show');
+  ri.textContent=`File: ${f.name} · Size: ${(f.size/1024).toFixed(1)} KB · Type: ${f.type||'unknown'}`;
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('fileInput').files=dt.files;handleFile(document.getElementById('fileInput'));}
+}
+
+function messagesPage(cls){
+  const msgs=messages[cls]||[];
+  const bubbles=msgs.map(m=>`
+    <div class="msg-bubble ${m.from==='admin'?'msg-admin':'msg-faculty'}">
+      <b>${m.from==='admin'?'Admin':'Faculty'}:</b> ${m.text}
+      <div class="msg-time">${m.time}</div>
+    </div>`).join('');
+  return`<div class="pg-title">Messages from Admin</div>
+  <div class="pg-sub">Instructions, feedback and communications</div>
+  <div class="g-card">
+    <div class="msg-thread" id="msgThread">${bubbles||'<div style="color:#475569;font-size:.8rem;text-align:center;padding:2rem">No messages yet.</div>'}</div>
+    <div class="msg-input-row">
+      <textarea class="msg-input" id="msgInput" rows="2" placeholder="Reply to admin…"></textarea>
+      <button class="send-btn" onclick="sendMsg('${cls}','faculty')">Send ↗</button>
+    </div>
+  </div>`;
+}
+
+function sendMsg(cls,from){
+  const inp=document.getElementById('msgInput');
+  const txt=inp.value.trim();if(!txt)return;
+  if(!messages[cls])messages[cls]=[];
+  messages[cls].push({from,text:txt,time:new Date().toLocaleTimeString()});
+  inp.value='';
+  // re-render thread
+  const thread=document.getElementById('msgThread');
+  if(thread) thread.innerHTML=messages[cls].map(m=>`
+    <div class="msg-bubble ${m.from==='admin'?'msg-admin':'msg-faculty'}">
+      <b>${m.from==='admin'?'Admin':'Faculty'}:</b> ${m.text}
+      <div class="msg-time">${m.time}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN UI
+// ═══════════════════════════════════════════════════
+function buildAdminUI(){
+  document.getElementById('navLinks').innerHTML=`
+    <div class="nav-item active" onclick="activateNav(this,'aDash')">📊 Overview</div>
+    <div class="nav-item" onclick="activateNav(this,'aClasses')">🏫 Class Performance</div>
+    <div class="nav-item" onclick="activateNav(this,'aRanking')">🏆 All Rankings</div>
+    <div class="nav-item" onclick="activateNav(this,'aMessages')">💬 Message Faculty</div>`;
+  renderAdminPages();
+}
+
+function renderAdminPages(){
+  // Aggregate all classes
+  const allClasses=['1','2','3','4','5'];
+  const clsSummary=allClasses.map(cls=>{
+    const {rolls,final:fin}=getClassData(cls);
+    const sgpas=rolls.map(r=>fin[r].SemSGPA);
+    const avg=(sgpas.reduce((a,b)=>a+b,0)/sgpas.length).toFixed(2);
+    const top=Math.max(...sgpas).toFixed(2);
+    const fail=rolls.filter(r=>SUBJ.some(s=>fin[r][s]==='F')).length;
+    return{cls,avg,top,fail,count:rolls.length};
+  });
+
+  document.getElementById('mainArea').innerHTML=`
+  <div class="page active" id="aDash">
+    <div class="pg-title">Admin – All Classes Overview</div>
+    <div class="pg-sub">VIIT · B.Tech I Semester 2025-26 · 5 Sections</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val">${allClasses.reduce((s,c)=>s+CLASSES[c].rolls,0)}</div><div class="stat-lbl">Total students</div></div>
+      <div class="stat-card"><div class="stat-val">${(clsSummary.reduce((s,c)=>s+parseFloat(c.avg),0)/clsSummary.length).toFixed(2)}</div><div class="stat-lbl">Overall avg SGPA</div></div>
+      <div class="stat-card"><div class="stat-val">${Math.max(...clsSummary.map(c=>parseFloat(c.top)))}</div><div class="stat-lbl">Highest SGPA</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:#f87171">${clsSummary.reduce((s,c)=>s+c.fail,0)}</div><div class="stat-lbl">Total F grades</div></div>
+    </div>
+    <div class="tbl-wrap" style="margin-bottom:1.25rem">
+      <div class="tbl-hdr"><span class="tbl-ttl">Class-wise Summary</span></div>
+      <table><thead><tr><th>Class</th><th>Branch</th><th>Students</th><th>Avg Sem SGPA</th><th>Top SGPA</th><th>F grades</th><th>Faculty</th></tr></thead>
+      <tbody>${clsSummary.map(({cls,avg,top,fail,count})=>`
+        <tr>
+          <td><span class="class-badge cls${cls}">${CLASSES[cls].name}</span></td>
+          <td>${CLASSES[cls].branch}</td><td>${count}</td>
+          <td><b style="color:#a5b4fc">${avg}</b></td>
+          <td>${top}</td>
+          <td style="color:${fail>5?'#f87171':'#4ade80'}">${fail}</td>
+          <td style="font-size:.75rem;color:#64748b">${Object.values(FACULTY).find(f=>f.cls===cls)?.name||'–'}</td>
+        </tr>`).join('')}
+      </tbody></table>
+    </div>
+    ${adminCompareChart(clsSummary)}
+  </div>
+  <div class="page" id="aClasses">${adminClassesPage()}</div>
+  <div class="page" id="aRanking">${adminRankingPage()}</div>
+  <div class="page" id="aMessages">${adminMessagesPage()}</div>`;
+}
+
+function adminCompareChart(summary){
+  const max=Math.max(...summary.map(c=>parseFloat(c.avg)));
+  const colors=['#818cf8','#38bdf8','#4ade80','#fbbf24','#e879f9'];
+  return`<div class="chart-card">
+    <div class="chart-title">Class Average SGPA Comparison</div>
+    ${summary.map(({cls,avg},i)=>{const pct=(parseFloat(avg)/10*100);return`
+    <div class="bar-row">
+      <div class="bar-lbl" style="width:90px">${CLASSES[cls].name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i]}"><span>${avg}</span></div></div>
+      <div class="bar-ext">${avg}</div>
+    </div>`}).join('')}
+  </div>`;
+}
+
+function adminClassesPage(){
+  const opts=['1','2','3','4','5'].map(c=>`<option value="${c}">${CLASSES[c].name} – ${CLASSES[c].branch}</option>`).join('');
+  return`<div class="pg-title">Class Performance Detail</div>
+  <div class="pg-sub">Select a class to view full breakdown</div>
+  <div class="sel-row"><div class="sel-grp"><label>Select class</label>
+  <select id="clsSel" onchange="loadAdminClass()"><option value="">-- choose --</option>${opts}</select></div></div>
+  <div id="clsContent"></div>`;
+}
+
+function loadAdminClass(){
+  const cls=document.getElementById('clsSel').value;if(!cls)return;
+  const {rolls,mid1,final:fin}=getClassData(cls);
+  const subAvg={};
+  SUBJ.forEach(s=>{const v=rolls.map(r=>mid1[r][s]).filter(v=>v!==null&&v!==undefined);subAvg[s]=(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1);});
+  const sgpas=rolls.map(r=>fin[r].SemSGPA);
+  const avg=(sgpas.reduce((a,b)=>a+b,0)/sgpas.length).toFixed(2);
+  document.getElementById('clsContent').innerHTML=`
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-val">${rolls.length}</div><div class="stat-lbl">Students</div></div>
+    <div class="stat-card"><div class="stat-val">${avg}</div><div class="stat-lbl">Avg Sem SGPA</div></div>
+    <div class="stat-card"><div class="stat-val">${Math.max(...sgpas).toFixed(2)}</div><div class="stat-lbl">Top SGPA</div></div>
+    <div class="stat-card"><div class="stat-val">${Math.min(...sgpas).toFixed(2)}</div><div class="stat-lbl">Min SGPA</div></div>
+  </div>
+  <div class="chart-grid">${subjectAvgChart(subAvg)}${gradeDistChart(rolls,fin)}</div>
+  ${sgpaDistChart(rolls,fin)}
+  <div class="tbl-wrap"><div class="tbl-hdr"><span class="tbl-ttl">${CLASSES[cls].name} – All Students</span>
+  <input class="search-box" placeholder="Search…" oninput="filterTbl(this,'adminTbl_${cls}')"></div>
+  <div style="overflow-x:auto"><table id="adminTbl_${cls}"><thead><tr><th>#</th><th>Roll No.</th>
+  ${SUBJ.map(s=>`<th>${s}</th>`).join('')}<th>Total</th><th>Sem SGPA</th><th>CGPA</th></tr></thead>
+  <tbody>${rolls.map((r,i)=>{
+    const m=mid1[r],f=fin[r];
+    const mt=SUBJ.reduce((s,k)=>s+(m[k]||0),0);
+    return`<tr><td>${i+1}</td><td style="font-weight:600;color:#e2e8f0">${r}</td>
+    ${SUBJ.map(s=>`<td>${m[s]!==null&&m[s]!==undefined?m[s]:'AB'}</td>`).join('')}
+    <td><b>${mt.toFixed(1)}</b></td>
+    <td style="font-weight:700;color:#a5b4fc">${f.SemSGPA}</td>
+    <td>${f.CGPA}</td></tr>`;}).join('')}
+  </tbody></table></div></div>`;
+}
+
+function adminRankingPage(){
+  // Cross-class top 20 by SGPA
+  const allData=[];
+  ['1','2','3','4','5'].forEach(cls=>{
+    const {rolls,final:fin}=getClassData(cls);
+    rolls.forEach(r=>allData.push({roll:r,cls,sgpa:fin[r].SemSGPA}));
+  });
+  allData.sort((a,b)=>b.sgpa-a.sgpa);
+  const colors=['#818cf8','#38bdf8','#4ade80','#fbbf24','#e879f9'];
+  return`<div class="pg-title">All-Classes Rankings</div>
+  <div class="pg-sub">Top performers across all 5 sections</div>
+  <div class="chart-grid">
+    <div>
+      <div class="chart-title" style="margin-bottom:.75rem">🌟 Top 20 – Overall (Sem SGPA)</div>
+      ${allData.slice(0,20).map(({roll,cls,sgpa},i)=>`
+      <div class="topper-item">
+        <div class="rank-b ${i<1?'r1':i<2?'r2':i<3?'r3':'rn'}">${i+1}</div>
+        <div style="flex:1"><div style="font-size:.82rem;font-weight:600;color:#e2e8f0">${roll}</div>
+          <span class="class-badge cls${cls}" style="font-size:.66rem">${CLASSES[cls].name}</span></div>
+        <div style="font-weight:700;color:#a5b4fc">${sgpa}</div>
+      </div>`).join('')}
+    </div>
+    <div>
+      ${['1','2','3','4','5'].map((cls,i)=>{
+        const {rolls,final:fin}=getClassData(cls);
+        const sorted=[...rolls].sort((a,b)=>fin[b].SemSGPA-fin[a].SemSGPA).slice(0,5);
+        return`<div style="margin-bottom:1rem">
+          <div style="font-size:.82rem;font-weight:600;color:#e2e8f0;margin-bottom:.4rem">
+            <span class="class-badge cls${cls}">${CLASSES[cls].name}</span> Top 5</div>
+          ${sorted.map((r,j)=>`<div class="topper-item" style="padding:.45rem .75rem">
+            <div class="rank-b ${j<1?'r1':j<2?'r2':j<3?'r3':'rn'}" style="width:22px;height:22px;font-size:.68rem">${j+1}</div>
+            <div style="flex:1;font-size:.78rem;color:#e2e8f0">${r}</div>
+            <div style="font-size:.78rem;font-weight:700;color:#a5b4fc">${fin[r].SemSGPA}</div>
+          </div>`).join('')}
+        </div>`;}).join('')}
+    </div>
+  </div>`;
+}
+
+function adminMessagesPage(){
+  const facList=Object.entries(FACULTY);
+  return`<div class="pg-title">Message Faculty</div>
+  <div class="pg-sub">Send instructions and feedback to class faculty</div>
+  <div class="sel-row"><div class="sel-grp"><label>Select Faculty / Class</label>
+  <select id="facSel" onchange="loadAdminMsgs()">
+    ${facList.map(([id,f])=>`<option value="${f.cls}">${f.name} – ${CLASSES[f.cls].name}</option>`).join('')}
+  </select></div></div>
+  <div id="adminMsgArea">${adminMsgThread('1')}</div>`;
+}
+
+function loadAdminMsgs(){
+  const cls=document.getElementById('facSel').value;
+  document.getElementById('adminMsgArea').innerHTML=adminMsgThread(cls);
+}
+
+function adminMsgThread(cls){
+  const msgs=messages[cls]||[];
+  const fac=Object.values(FACULTY).find(f=>f.cls===cls);
+  return`<div class="g-card">
+    <div style="font-size:.82rem;font-weight:600;color:#94a3b8;margin-bottom:.75rem">Conversation with ${fac?.name||'Faculty'} – ${CLASSES[cls].name}</div>
+    <div class="msg-thread" id="adminThread_${cls}">
+      ${msgs.length?msgs.map(m=>`<div class="msg-bubble ${m.from==='admin'?'msg-admin':'msg-faculty'}">
+        <b>${m.from==='admin'?'Admin':'Faculty'}:</b> ${m.text}
+        <div class="msg-time">${m.time}</div></div>`).join(''):'<div style="color:#475569;font-size:.8rem;text-align:center;padding:2rem">No messages yet.</div>'}
+    </div>
+    <div class="msg-input-row">
+      <textarea class="msg-input" id="adminMsgInput_${cls}" rows="2" placeholder="Write instruction or feedback…"></textarea>
+      <button class="send-btn" onclick="sendAdminMsg('${cls}')">Send ↗</button>
+    </div>
+  </div>`;
+}
+
+function sendAdminMsg(cls){
+  const inp=document.getElementById('adminMsgInput_'+cls);
+  const txt=inp.value.trim();if(!txt)return;
+  if(!messages[cls])messages[cls]=[];
+  messages[cls].push({from:'admin',text:txt,time:new Date().toLocaleTimeString()});
+  inp.value='';
+  const thread=document.getElementById('adminThread_'+cls);
+  if(thread) thread.innerHTML=messages[cls].map(m=>`<div class="msg-bubble ${m.from==='admin'?'msg-admin':'msg-faculty'}">
+    <b>${m.from==='admin'?'Admin':'Faculty'}:</b> ${m.text}<div class="msg-time">${m.time}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function gradePill(g){
+  if(!g||g==='–') return'<span class="grade-pill g-AB">–</span>';
+  const map={S:'g-S',A:'g-A',B:'g-B',C:'g-C',D:'g-D',E:'g-E',F:'g-F',MP:'g-MP',H:'g-MP',AB:'g-AB',Y:'g-AB'};
+  return`<span class="grade-pill ${map[g]||'g-AB'}">${g}</span>`;
+}
+
+function guidanceBlock(m){
+  const items=SUBJ.map(s=>{
+    const v=m[s];const max=MID_MAX[s];
+    if(v===null||v===undefined) return`<div class="guid-item guid-bad">⚠ ${s} (${SUBNAMES[s]}): Absent in Mid-1. Contact faculty immediately.</div>`;
+    const pct=(v/max)*100;
+    if(pct>=80) return`<div class="guid-item guid-good">✓ ${s}: Excellent (${v}/${max}). Maintain this performance!</div>`;
+    if(pct>=60) return`<div class="guid-item guid-warn">→ ${s}: Average (${v}/${max}). Review concepts and practice more problems.</div>`;
+    return`<div class="guid-item guid-bad">✗ ${s}: Needs improvement (${v}/${max}). Consult faculty and focus on fundamentals.</div>`;
+  }).join('');
+  return`<div class="g-card" style="margin-top:1rem"><div class="chart-title" style="margin-bottom:.6rem">📌 Study Guidance</div>${items}</div>`;
+}
+
+function activateNav(el,pid){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById(pid);if(pg)pg.classList.add('active');
+}
+</script>
+</body>
+</html>
